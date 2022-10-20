@@ -1,0 +1,5 @@
+.vs
+CronoTrain/bin/
+CronoTrain/obj/
+
+*.user
