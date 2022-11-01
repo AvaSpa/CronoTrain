@@ -24,10 +24,10 @@
                     HorizontalOptions="Center" />
 
                 <Button
-                    x:Name="StopBtn"
+                    x:Name="ResetBtn"
                     Text="Stop"
-                    SemanticProperties.Hint="Stops the timer"
-                    Clicked="OnStopClicked"
+                    SemanticProperties.Hint="Resets everything"
+                    Clicked="OnResetClicked"
                     HorizontalOptions="Center" />
             </HorizontalStackLayout>
 
