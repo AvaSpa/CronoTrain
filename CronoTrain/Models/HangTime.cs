@@ -2,9 +2,9 @@
 {
     public class HangTime
     {
+        public int Id { get; set; }
+        public int SessionId { get; set; }
         public TimeSpan Duration { get; set; }
-
-        //TODO: add session id (create Session model with id and (end) time stamp)
 
         public static HangTime Zero => new HangTime(TimeSpan.Zero);
 

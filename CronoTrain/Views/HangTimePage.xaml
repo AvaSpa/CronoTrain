@@ -10,7 +10,9 @@
           ColumnDefinitions=".50*, .50*"
           Padding="10"
           RowSpacing="10"
-          ColumnSpacing="10">
+          ColumnSpacing="10"
+          BackgroundColor="{Binding TimeColor}"
+          >
 
         <Label 
             Grid.ColumnSpan="2"

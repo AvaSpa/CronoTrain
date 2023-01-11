@@ -19,6 +19,9 @@ namespace CronoTrain.ViewModels
         private HangTime _runningTime = HangTime.Zero;
 
         [ObservableProperty]
+        private Color _timeColor = Colors.Transparent;
+
+        [ObservableProperty]
         private string _buttonText = IdleButtonText;
 
         [ObservableProperty]
@@ -45,7 +48,8 @@ namespace CronoTrain.ViewModels
             _isHanging = !_isHanging;
 
             ButtonText = _isHanging ? HangingButtonText : IdleButtonText;
-            //TODO: change RunningTime background (or whole page background)
+            TimeColor = _isHanging ? Colors.Green : Colors.GreenYellow;
+            //TODO: Tweak colors
 
             await Task.CompletedTask;
         }
