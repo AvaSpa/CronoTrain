@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="CronoTrain.Views.HangTimePage"
+             xmlns:viewmodels="clr-namespace:CronoTrain.ViewModels"
+             x:DataType="viewmodels:HangTimeViewModel"
+             Title="Hang Time">
+
+    <Grid RowDefinitions="Auto, Auto, *"
+          ColumnDefinitions=".50*, .50*"
+          Padding="10"
+          RowSpacing="10"
+          ColumnSpacing="10">
+
+        <Label 
+            Grid.ColumnSpan="2"
+            Text="Press Start. &#10;Hang as much as you can. &#10;Drop. &#10;Press Break. &#10;Wait until alerted. &#10;Hang again as much as you can."
+            FontSize="18"
+            VerticalOptions="Center" 
+            HorizontalOptions="Center" 
+            Margin="0, 10, 0, 20"
+            />
+
+        <Button
+            Grid.Row="1"
+            Text="{Binding ButtonText}"
+            FontSize="25"
+            Command="{Binding ToggleTimerCommand}"
+            />
+        <Label 
+            Grid.Row="1"
+            Grid.Column="1"
+            Text="{Binding RunningTime}"
+            FontSize="25"
+            VerticalOptions="Center" 
+            HorizontalOptions="Center" 
+            />
+
+        <ListView
+            Grid.Row="2"
+            ItemsSource="{Binding HangTimes}"
+            SelectionMode="None"
+            Margin="0, 10, 0, 0"
+            >
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ViewCell>
+                        <Grid Padding="10">
+                            <Label
+                                Text="{Binding .}"
+                                FontSize="20"
+                                VerticalOptions="Center"
+                                HorizontalOptions="Center"
+                                />
+                        </Grid>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+    </Grid>
+</ContentPage>
