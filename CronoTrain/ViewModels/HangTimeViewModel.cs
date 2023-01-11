@@ -1,10 +1,14 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CronoTrain.Models;
+using Plugin.Maui.Audio;
 using System.Collections.ObjectModel;
 
 namespace CronoTrain.ViewModels
 {
+    /// <summary>
+    /// TODO: add set count configuration (now when you are done it keeps alerting about break end)
+    /// </summary>
     public partial class HangTimeViewModel : BaseViewModel
     {
         private const string IdleButtonText = "Start";
@@ -14,6 +18,11 @@ namespace CronoTrain.ViewModels
         private bool _isHanging;
         private int _hangTicks;
         private IDispatcherTimer _timer;
+        private IAudioPlayer _breakEndAudioPlayer;
+        private bool _shouldVibrate;
+
+        private readonly IAudioManager _audioManager;
+        private readonly IVibration _vibration;
 
         [ObservableProperty]
         private HangTime _runningTime = HangTime.Zero;
@@ -27,11 +36,15 @@ namespace CronoTrain.ViewModels
         [ObservableProperty]
         private ObservableCollection<HangTime> _hangTimes;
 
-        public HangTimeViewModel()
+        public HangTimeViewModel(IAudioManager audioManager, IVibration vibration)
         {
+            _audioManager = audioManager;
+            _vibration = vibration;
+
             HangTimes = new ObservableCollection<HangTime>();
 
             SetupTimer();
+            Task.Run(CreateBreakEndAudioPlayer).Wait();
         }
 
         [RelayCommand]
@@ -43,7 +56,10 @@ namespace CronoTrain.ViewModels
             if (_isHanging)
                 HangTimes.Add(RunningTime);
             else
+            {
                 _hangTicks = 0;
+                StopBreakEndAlert();
+            }
 
             _isHanging = !_isHanging;
 
@@ -68,17 +84,56 @@ namespace CronoTrain.ViewModels
                 else
                 {
                     _timer.Stop();
-                    //TODO: alert with sound and vibration
+                    AlertBreakEnd();
                 }
 
                 RunningTime = new HangTime(TimeSpan.FromMilliseconds(_hangTicks * TimerInverval));
             };
         }
 
+        /// <summary>
+        /// TODO: change background color to "go hang"
+        /// </summary>
+        private void AlertBreakEnd()
+        {
+            _breakEndAudioPlayer.Play();
+
+            _shouldVibrate = true;
+            Task.Run(async () =>
+            {
+                while (_shouldVibrate)
+                {
+                    _vibration.Vibrate(750);
+                    await Task.Delay(1500);
+                }
+            });
+        }
+
+        private void StopBreakEndAlert()
+        {
+            _breakEndAudioPlayer.Stop();
+
+            _shouldVibrate = false;
+        }
+
+        private async Task CreateBreakEndAudioPlayer()
+        {
+            if (_breakEndAudioPlayer == null)
+            {
+                _breakEndAudioPlayer = _audioManager.CreatePlayer(await FileSystem.OpenAppPackageFileAsync("Sounds/BreakEndBeep.wav"));
+                _breakEndAudioPlayer.Volume = 1;
+                _breakEndAudioPlayer.Loop = true;
+            }
+        }
+
         public override void Terminate()
         {
             _timer.Stop();
             HangTimes.Clear();
+            _breakEndAudioPlayer.Stop();
+            _breakEndAudioPlayer.Dispose();
+            _shouldVibrate = false;
+            _vibration.Cancel();
 
             //TODO: save stats (create new session and save HangTimes)
         }
