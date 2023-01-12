@@ -15,6 +15,12 @@ namespace CronoTrain.ViewModels
         private const string HangingButtonText = "Break";
         private const int TimerInverval = 10;
 
+        //TODO: Tweak colors
+        private static readonly Color StartColor = Colors.Transparent;
+        private static readonly Color HangingColor = Colors.Green;
+        private static readonly Color BreakColor = Colors.GreenYellow;
+        private static readonly Color AlertColor = Colors.OrangeRed;
+
         private bool _isHanging;
         private int _hangTicks;
         private IDispatcherTimer _timer;
@@ -28,7 +34,7 @@ namespace CronoTrain.ViewModels
         private HangTime _runningTime = HangTime.Zero;
 
         [ObservableProperty]
-        private Color _timeColor = Colors.Transparent;
+        private Color _timeColor = StartColor;
 
         [ObservableProperty]
         private string _buttonText = IdleButtonText;
@@ -64,8 +70,7 @@ namespace CronoTrain.ViewModels
             _isHanging = !_isHanging;
 
             ButtonText = _isHanging ? HangingButtonText : IdleButtonText;
-            TimeColor = _isHanging ? Colors.Green : Colors.GreenYellow;
-            //TODO: Tweak colors
+            TimeColor = _isHanging ? HangingColor : BreakColor;
 
             await Task.CompletedTask;
         }
@@ -91,11 +96,10 @@ namespace CronoTrain.ViewModels
             };
         }
 
-        /// <summary>
-        /// TODO: change background color to "go hang"
-        /// </summary>
         private void AlertBreakEnd()
         {
+            TimeColor = GoColor;
+
             _breakEndAudioPlayer.Play();
 
             _shouldVibrate = true;
