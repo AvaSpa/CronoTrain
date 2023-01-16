@@ -381,4 +381,7 @@
         <Setter Property="SelectedTabColor" Value="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}" />
     </Style>
 
+    <Style TargetType="Stepper">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
 </ResourceDictionary>

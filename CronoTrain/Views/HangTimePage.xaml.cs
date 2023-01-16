@@ -8,6 +8,8 @@ public partial class HangTimePage : ContentPage
     {
         InitializeComponent();
         BindingContext = vm;
+
+        vm.View = this;
     }
 
     protected override void OnNavigatingFrom(NavigatingFromEventArgs args)
@@ -24,5 +26,23 @@ public partial class HangTimePage : ContentPage
 
         var vm = BindingContext as HangTimeViewModel;
         vm.Initialize();
+    }
+
+    public void CollapseHangCountInput()
+    {
+        Collapse(Stepper);
+        Collapse(StepperValue);
+    }
+
+    private void Collapse(View control)
+    {
+        var inputHeight = control.Height;
+
+        var animation = new Animation((value) =>
+        {
+            control.HeightRequest = value;
+        }, inputHeight, 0, Easing.Linear);
+
+        control.Animate("hide", animation);
     }
 }

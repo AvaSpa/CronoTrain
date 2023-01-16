@@ -1,18 +1,17 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CronoTrain.Code.Utils;
 using CronoTrain.Models;
-using Plugin.Maui.Audio;
+using CronoTrain.Views;
 using System.Collections.ObjectModel;
 
 namespace CronoTrain.ViewModels
 {
-    /// <summary>
-    /// TODO: add set count configuration (now when you are done it keeps alerting about break end)
-    /// </summary>
     public partial class HangTimeViewModel : BaseViewModel
     {
         private const string IdleButtonText = "Start";
         private const string HangingButtonText = "Break";
+        private const string DoneButtonText = "Done";
         private const int TimerInverval = 10;
 
         //TODO: Tweak colors
@@ -20,21 +19,16 @@ namespace CronoTrain.ViewModels
         private static readonly Color HangingColor = Colors.Green;
         private static readonly Color BreakColor = Colors.GreenYellow;
         private static readonly Color AlertColor = Colors.OrangeRed;
-
+        private readonly IAlertManager _alertManager;
         private bool _isHanging;
         private int _hangTicks;
         private IDispatcherTimer _timer;
-        private IAudioPlayer _breakEndAudioPlayer;
-        private bool _shouldVibrate;
-
-        private readonly IAudioManager _audioManager;
-        private readonly IVibration _vibration;
 
         [ObservableProperty]
         private HangTime _runningTime = HangTime.Zero;
 
         [ObservableProperty]
-        private Color _timeColor = StartColor;
+        private Color _backgroundColor = StartColor;
 
         [ObservableProperty]
         private string _buttonText = IdleButtonText;
@@ -42,35 +36,47 @@ namespace CronoTrain.ViewModels
         [ObservableProperty]
         private ObservableCollection<HangTime> _hangTimes;
 
-        public HangTimeViewModel(IAudioManager audioManager, IVibration vibration)
-        {
-            _audioManager = audioManager;
-            _vibration = vibration;
+        [ObservableProperty]
+        private int _hangCount = 1;
 
+        [ObservableProperty]
+        private bool _buttonIsEnabled = true;
+
+        public HangTimeViewModel(IAlertManager alertManager)
+        {
             HangTimes = new ObservableCollection<HangTime>();
 
             SetupTimer();
-            Task.Run(CreateBreakEndAudioPlayer).Wait();
+            _alertManager = alertManager;
         }
 
         [RelayCommand]
         private async Task ToggleTimer()
         {
             if (!_timer.IsRunning)
+            {
+                var page = (HangTimePage)View;
+                page.CollapseHangCountInput();
+                //TODO: make new event, raise it here and handle it in the view
+                // then remove the View property from base
+
                 _timer.Start();
+            }
 
             if (_isHanging)
-                HangTimes.Add(RunningTime);
+            {
+                HangTimes.Add(RunningTime); //TODO: add all empty times based on set input and just update them here               
+            }
             else
             {
                 _hangTicks = 0;
-                StopBreakEndAlert();
+                _alertManager.StopBreakEndAlert();
             }
 
             _isHanging = !_isHanging;
 
             ButtonText = _isHanging ? HangingButtonText : IdleButtonText;
-            TimeColor = _isHanging ? HangingColor : BreakColor;
+            BackgroundColor = _isHanging ? HangingColor : BreakColor;
 
             await Task.CompletedTask;
         }
@@ -89,61 +95,43 @@ namespace CronoTrain.ViewModels
                 else
                 {
                     _timer.Stop();
-                    AlertBreakEnd();
+
+                    if (HangTimes.Count >= HangCount) //TODO: check against HangTimes.Count(ht=>ht.Updated) after all in list is implemented
+                    {
+                        Terminate();
+                        Initialize();
+                        ButtonIsEnabled = false;
+                        ButtonText = DoneButtonText;
+                        //TODO: fix this: you can click durring break and that leads to one extra hang time
+
+                        return;
+                    }
+                    else
+                    {
+                        BackgroundColor = AlertColor;
+                        _alertManager.AlertBreakEnd();
+                    }
                 }
 
                 RunningTime = new HangTime(TimeSpan.FromMilliseconds(_hangTicks * TimerInverval));
             };
         }
 
-        private void AlertBreakEnd()
-        {
-            TimeColor = GoColor;
-
-            _breakEndAudioPlayer.Play();
-
-            _shouldVibrate = true;
-            Task.Run(async () =>
-            {
-                while (_shouldVibrate)
-                {
-                    _vibration.Vibrate(750);
-                    await Task.Delay(1500);
-                }
-            });
-        }
-
-        private void StopBreakEndAlert()
-        {
-            _breakEndAudioPlayer.Stop();
-
-            _shouldVibrate = false;
-        }
-
-        private async Task CreateBreakEndAudioPlayer()
-        {
-            if (_breakEndAudioPlayer == null)
-            {
-                _breakEndAudioPlayer = _audioManager.CreatePlayer(await FileSystem.OpenAppPackageFileAsync("Sounds/BreakEndBeep.wav"));
-                _breakEndAudioPlayer.Volume = 1;
-                _breakEndAudioPlayer.Loop = true;
-            }
-        }
-
         public override void Terminate()
         {
             _timer.Stop();
-            HangTimes.Clear();
-            _breakEndAudioPlayer.Stop();
-            _breakEndAudioPlayer.Dispose();
-            _shouldVibrate = false;
-            _vibration.Cancel();
-
+            _alertManager.Clear();
             //TODO: save stats (create new session and save HangTimes)
         }
 
         public override void Initialize()
         {
+            _isHanging = false;
+            _hangTicks = 0;
+            BackgroundColor = StartColor;
+            ButtonText = IdleButtonText;
+            RunningTime = HangTime.Zero;
+
             //TODO: load stats (calculate label values based on session and HangTimes)
         }
     }

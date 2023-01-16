@@ -1,4 +1,5 @@
-﻿using CronoTrain.ViewModels;
+﻿using CronoTrain.Code.Utils;
+using CronoTrain.ViewModels;
 using CronoTrain.Views;
 using Plugin.Maui.Audio;
 
@@ -25,6 +26,8 @@ public static class MauiProgram
 
         builder.Services.AddSingleton(AudioManager.Current);
         builder.Services.AddSingleton(Vibration.Default);
+
+        builder.Services.AddTransient<IAlertManager, AlertManager>();
 
         return builder.Build();
     }
