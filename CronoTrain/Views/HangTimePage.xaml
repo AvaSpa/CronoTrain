@@ -6,7 +6,7 @@
              x:DataType="viewmodels:HangTimeViewModel"
              Title="Hang Time">
 
-	<Grid RowDefinitions="Auto, Auto, Auto, *"
+    <Grid RowDefinitions="Auto, Auto, Auto, *"
           ColumnDefinitions=".50*, .50*"
           Padding="10"
           RowSpacing="10"
@@ -14,7 +14,7 @@
           BackgroundColor="{Binding BackgroundColor}"
           >
 
-		<Label
+        <Label
             Grid.ColumnSpan="2"
             Text="Input number of hangs. &#10;Press Start. &#10;Hang as much as you can. &#10;Drop. &#10;Press Break. &#10;Wait until alerted. &#10;Hang again as much as you can."
             FontSize="18"
@@ -23,19 +23,23 @@
             Margin="0, 10, 0, 20"
             />
 
-		<!--TODO: Make custom control with individual buttons and label and collapsable on VisibleChanged-->
-		<!--https://stackoverflow.com/questions/74751527/how-to-create-reusable-components-in-net-maui-->
-		<!--https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/contentview?view=net-maui-7.0-->
-		<!--See url on messenger for formatting xaml-->
+        <!--TODO: Make custom control with individual buttons and label and collapsable on VisibleChanged-->
+        <!--https://stackoverflow.com/questions/74751527/how-to-create-reusable-components-in-net-maui-->
+        <!--https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/contentview?view=net-maui-7.0-->
+        <!--See url on messenger for formatting xaml-->
 
-		<Stepper x:Name="Stepper"
+        <!--TODO: Fix timer. Now it counts 2 seconds as one-->
+        <!--TODO: Disable button while in break-->
+        <!--TODO: Fix navigation. Now Back doesn't work either way-->
+
+        <Stepper x:Name="Stepper"
             Grid.Column="0"
             Grid.Row="1"
             Minimum="1"
             Maximum="10"
             Value="{Binding HangCount}"
             />
-		<Label x:Name="StepperValue"
+        <Label x:Name="StepperValue"
             Grid.Column="1"
             Grid.Row="1"
             Text="{Binding HangCount}"
@@ -44,14 +48,14 @@
             HorizontalOptions="Center"
         />
 
-		<Button
+        <Button
             Grid.Row="2"
             Text="{Binding ButtonText}"
             IsEnabled="{Binding ButtonIsEnabled}"
             FontSize="25"
             Command="{Binding ToggleTimerCommand}"
             />
-		<Label
+        <Label
             Grid.Row="2"
             Grid.Column="1"
             Text="{Binding RunningTime}"
@@ -60,27 +64,27 @@
             HorizontalOptions="Center"
             />
 
-		<ListView
+        <ListView
             Grid.Row="3"
             ItemsSource="{Binding HangTimes}"
             SelectionMode="None"
             Margin="0, 10, 0, 0"
             >
-			<ListView.ItemTemplate>
-				<DataTemplate>
-					<ViewCell>
-						<Grid Padding="10">
-							<Label
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ViewCell>
+                        <Grid Padding="10">
+                            <Label
                                 Text="{Binding .}"
                                 FontSize="20"
                                 VerticalOptions="Center"
                                 HorizontalOptions="Center"
                                 />
-						</Grid>
-					</ViewCell>
-				</DataTemplate>
-			</ListView.ItemTemplate>
-		</ListView>
+                        </Grid>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
 
-	</Grid>
+    </Grid>
 </ContentPage>
